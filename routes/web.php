@@ -31,12 +31,18 @@ Route::middleware(['throttle:global'])->group(function () {
     Route::post('/cart/add/{id}', [ShopController::class, 'addToCart'])->name('cart.add');
     Route::post('/cart/update', [ShopController::class, 'updateCart'])->name('cart.update');
     Route::post('/cart/remove/{id}', [ShopController::class, 'removeFromCart'])->name('cart.remove');
-    Route::get('/checkout', [ShopController::class, 'checkout'])->name('checkout');
-    Route::post('/checkout', [ShopController::class, 'submitCheckout'])->middleware('throttle:form')->name('checkout.submit');
-
-    // Authenticated customer account route
-    Route::middleware(['auth'])->group(function () {
+    // Authenticated & verified customer account & checkout routes
+    Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/my-account', [ShopController::class, 'myAccount'])->name('my-account');
+        Route::get('/checkout', [ShopController::class, 'checkout'])->name('checkout');
+        Route::post('/checkout', [ShopController::class, 'submitCheckout'])->middleware('throttle:form')->name('checkout.submit');
+    });
+
+    // Email Verification Notice & Handlers
+    Route::middleware(['auth'])->group(function () {
+        Route::get('/email/verify', [AuthController::class, 'verificationNotice'])->name('verification.notice');
+        Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])->middleware(['signed', 'throttle:6,1'])->name('verification.verify');
+        Route::post('/email/verification-notification', [AuthController::class, 'resendVerificationEmail'])->middleware('throttle:6,1')->name('verification.send');
     });
 
     // Authentication routes (limit to 5 attempts per minute)

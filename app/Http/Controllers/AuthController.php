@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Auth\Events\Registered;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -143,9 +145,38 @@ class AuthController extends Controller
             'role' => 'customer',
         ]);
 
+        event(new Registered($user));
+
         Auth::login($user);
 
-        return redirect()->route('my-account')->with('success', 'Account registered and logged in successfully.');
+        return redirect()->route('verification.notice')->with('success', 'Registration successful! Please verify your email address.');
+    }
+
+    public function verificationNotice()
+    {
+        if (Auth::check() && Auth::user()->hasVerifiedEmail()) {
+            return redirect()->route('my-account');
+        }
+
+        return view('auth.verify-email');
+    }
+
+    public function verifyEmail(EmailVerificationRequest $request)
+    {
+        $request->fulfill();
+
+        return redirect()->route('my-account')->with('success', 'Your email address has been verified successfully!');
+    }
+
+    public function resendVerificationEmail(Request $request)
+    {
+        if ($request->user()->hasVerifiedEmail()) {
+            return redirect()->route('my-account');
+        }
+
+        $request->user()->sendEmailVerificationNotification();
+
+        return back()->with('success', 'A new verification link has been sent to your email address.');
     }
 
     public function logout(Request $request)
