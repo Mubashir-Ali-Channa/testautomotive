@@ -35,12 +35,4 @@ return [
         ],
     ],
 
-    'abstractapi' => [
-        'email_key' => env('ABSTRACTAPI_EMAIL_KEY'),
-    ],
-
-    'zerobounce' => [
-        'key' => env('ZEROBOUNCE_API_KEY'),
-    ],
-
 ];

@@ -8,7 +8,6 @@ use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Http;
 
 class AuthController extends Controller
 {
@@ -120,23 +119,6 @@ class AuthController extends Controller
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:6|confirmed',
         ]);
-
-        // Verify email deliverability via ZeroBounce (fail open on errors)
-        try {
-            $verification = Http::timeout(8)->get('https://api.zerobounce.net/v2/validate', [
-                'api_key' => config('services.zerobounce.key'),
-                'email' => $request->email,
-                'ip_address' => '',
-            ]);
-
-            if ($verification->successful() && $verification->json('status') === 'invalid') {
-                return back()->withErrors([
-                    'email' => 'This email address appears to be invalid or undeliverable. Please use a real email.',
-                ])->onlyInput('email');
-            }
-        } catch (\Exception $e) {
-            // API unavailable — fail open and allow registration to proceed
-        }
 
         $user = User::create([
             'name' => $request->name,
