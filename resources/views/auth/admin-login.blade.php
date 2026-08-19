@@ -18,12 +18,12 @@
                     <p class="text-muted" style="margin-top: 5px; font-size: 0.95rem;">Authorized Administrator Access Only</p>
                 </div>
 
-                <form action="{{ route('admin.login') }}" method="POST">
+                <form action="{{ route('admin.login.submit') }}" method="POST">
                     @csrf
                     
                     <div class="form-group">
                         <label class="form-label" for="email">Admin Email Address</label>
-                        <input type="email" name="email" id="email" required class="form-control" placeholder="admin@testautomotive.com" value="{{ old('email') }}">
+                        <input type="email" name="email" id="email" required class="form-control" placeholder="email@example.com" value="{{ old('email') }}">
                         @error('email')
                             <span class="text-danger" style="font-size: 0.85rem; margin-top: 5px; display:block;">{{ $message }}</span>
                         @enderror

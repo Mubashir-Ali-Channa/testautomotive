@@ -57,7 +57,7 @@
     </div>
 
     <!-- Header Navigation -->
-    <header class="site-header scroll-fade">
+    <header class="site-header header-slide-in">
         <div class="container nav-bar">
             <a href="{{ route('home') }}" class="logo">
                 <div>TEST<span style="color: var(--primary);">AUTOMOTIVE</span></div>
