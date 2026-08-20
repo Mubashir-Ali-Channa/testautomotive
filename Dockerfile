@@ -1,22 +1,5 @@
 # =============================================================================
-# Stage 1 — Node: install JS deps and compile Vite/Tailwind assets
-# =============================================================================
-FROM node:22-alpine AS node_builder
-
-WORKDIR /app
-
-COPY package.json package-lock.json* ./
-RUN npm ci --ignore-scripts
-
-COPY vite.config.* ./
-COPY resources/ ./resources/
-COPY public/ ./public/
-
-RUN npm run build
-
-
-# =============================================================================
-# Stage 2 — Composer: install PHP deps (no dev dependencies)
+# Stage 1 — Composer: install PHP production dependencies
 # =============================================================================
 FROM composer:2 AS composer_builder
 
@@ -33,12 +16,12 @@ RUN composer install \
 
 COPY . .
 
-# Re-run scripts now that the full app is in place (triggers package:discover, etc.)
+# Run discovery and autoload optimization
 RUN composer run-script post-autoload-dump --no-interaction
 
 
 # =============================================================================
-# Stage 3 — Production: PHP 8.3-FPM + Nginx
+# Stage 2 — Production: PHP 8.3-FPM + Nginx (Pure PHP, No Node required)
 # =============================================================================
 FROM php:8.3-fpm-alpine AS production
 
@@ -87,16 +70,13 @@ COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 # ── Application files ─────────────────────────────────────────────────────────
 WORKDIR /var/www/html
 
-# Copy vendor from Composer stage
+# Copy application and vendor from Composer stage
 COPY --from=composer_builder /app /var/www/html
-
-# Overwrite public/build with compiled Vite assets from Node stage
-COPY --from=node_builder /app/public/build ./public/build
 
 # ── Permissions ───────────────────────────────────────────────────────────────
 RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html/storage \
-    && chmod -R 755 /var/www/html/bootstrap/cache
+    && chmod -R 775 /var/www/html/storage \
+    && chmod -R 775 /var/www/html/bootstrap/cache
 
 # ── Entrypoint ────────────────────────────────────────────────────────────────
 COPY docker/entrypoint.sh /entrypoint.sh
