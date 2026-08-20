@@ -22,7 +22,10 @@ php artisan route:cache
 echo "[3/4] Caching views..."
 php artisan view:cache
 
-echo "[4/4] Running database migrations..."
+echo "[4/4] Creating storage symlink..."
+php artisan storage:link --force
+
+echo "[5/5] Running database migrations..."
 php artisan migrate --force --no-interaction
 
 echo "=== Boot complete. Starting services ==="
