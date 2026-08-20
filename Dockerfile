@@ -61,8 +61,8 @@ RUN docker-php-ext-configure gd \
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/app.ini
 COPY docker/php/www.conf /usr/local/etc/php-fpm.d/www.conf
 
-# ── Nginx config ──────────────────────────────────────────────────────────────
-COPY docker/nginx/default.conf /etc/nginx/http.d/default.conf
+# ── Nginx config template ─────────────────────────────────────────────────────
+COPY docker/nginx/default.conf.template /etc/nginx/http.d/default.conf.template
 
 # ── Supervisor config (manages nginx + php-fpm in one container) ──────────────
 COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
